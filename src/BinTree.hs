@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module Main where
+module BinTree where
 import Data.Void (Void)
 
 data BinTree a
