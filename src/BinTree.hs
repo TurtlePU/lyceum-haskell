@@ -41,7 +41,7 @@ singleton v = node empty v empty
 
 insert :: Ord a => a -> BinTree a -> BinTree a
 insert v Leaf = singleton v
-insert v n@Node {..}
+insert v Node {..}
     | v > value = node left value (insert v right)
     | v < value = node (insert v left) value right
     | otherwise = node left v right
@@ -72,18 +72,18 @@ deleteMin :: Ord a => BinTree a -> (a, BinTree a)
 deleteMin Leaf = error "tree is empty"
 deleteMin Node {left=Leaf, ..} = (value, right)
 deleteMin Node {..} =
-    let (min, left') = deleteMin left
-     in (min, node left' value right)
+    let (minValue, left') = deleteMin left
+     in (minValue, node left' value right)
 
 deleteMax :: Ord a => BinTree a -> (BinTree a, a)
 deleteMax Leaf = error "tree is empty"
 deleteMax Node {right=Leaf, ..} = (left, value)
 deleteMax Node {..} =
-    let (right', max) = deleteMax right
-     in (node left value right', max)
+    let (right', maxValue) = deleteMax right
+     in (node left value right', maxValue)
 
 delete :: Ord a => a -> BinTree a -> BinTree a
-delete v Leaf = Leaf
+delete _ Leaf = Leaf
 delete v Node {..}
     | v < value = node (delete v left) value right
     | v > value = node left value (delete v right)
@@ -116,10 +116,10 @@ data Entry k v = Entry { eKey :: k, eValue :: v } -- (k, v)
     deriving (Read, Show)
 
 instance Eq k => Eq (Entry k v) where
-    Entry k v == Entry k' v' = k == k'
+    Entry k _ == Entry k' _ = k == k'
 
 instance Ord k => Ord (Entry k v) where
-    compare (Entry k v) (Entry k' v') = compare k k'
+    compare (Entry k _) (Entry k' _) = compare k k'
 
 newtype BinMap k v = BinMap { binMap :: BinTree (Entry k v) }
     deriving (Read, Show)
@@ -142,13 +142,6 @@ instance Ord k => Semigroup (BinMap k v) where
 instance Ord k => Monoid (BinMap k v) where
     mempty = emptyMap
 
-run :: (Read k, Ord k, Show k, Read v, Show v) => BinMap k v -> IO ()
-run map = do
-    addend <- readLn
-    let newMap = map <> addend
-    print newMap
-    run newMap
-
 unit :: ()
 unit = ()
 
@@ -163,6 +156,3 @@ q1 = [singleton (), empty]
 
 q2 :: [BinTree Void]
 q2 = [empty]
-
-main :: IO ()
-main = run (emptyMap :: BinMap Int Int)
