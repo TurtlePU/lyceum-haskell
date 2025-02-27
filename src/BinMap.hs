@@ -2,9 +2,19 @@ module BinMap where
 
 import BinTree (BinTree, empty, singleton, insert, delete)
 import Data.Void (Void)
+import Data.Bifunctor (first)
 
 data Entry k v = Entry { eKey :: k, eValue :: v } -- (k, v)
-    deriving (Read, Show)
+
+instance (Read k, Read v) => Read (Entry k v) where
+    readsPrec n s =
+        [ (Entry k v, u)
+        | (k, ':':t) <- readsPrec n s
+        , (v, u) <- readsPrec n t
+        ]
+
+instance (Show k, Show v) => Show (Entry k v) where
+    show (Entry k v) = show k ++ ":" ++ show v
 
 instance Eq k => Eq (Entry k v) where
     Entry k _ == Entry k' _ = k == k'
@@ -13,7 +23,10 @@ instance Ord k => Ord (Entry k v) where
     compare (Entry k _) (Entry k' _) = compare k k'
 
 newtype BinMap k v = BinMap { binMap :: BinTree (Entry k v) }
-    deriving (Read, Show)
+    deriving (Show)
+
+instance (Read k, Read v) => Read (BinMap k v) where
+    readsPrec n s = map (first BinMap) (readsPrec n s)
 
 emptyMap :: BinMap k v
 emptyMap = BinMap empty
