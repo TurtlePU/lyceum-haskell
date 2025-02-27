@@ -1,0 +1,49 @@
+module BinMap where
+
+import BinTree (BinTree, empty, singleton, insert, delete)
+import Data.Void (Void)
+
+data Entry k v = Entry { eKey :: k, eValue :: v } -- (k, v)
+    deriving (Read, Show)
+
+instance Eq k => Eq (Entry k v) where
+    Entry k _ == Entry k' _ = k == k'
+
+instance Ord k => Ord (Entry k v) where
+    compare (Entry k _) (Entry k' _) = compare k k'
+
+newtype BinMap k v = BinMap { binMap :: BinTree (Entry k v) }
+    deriving (Read, Show)
+
+emptyMap :: BinMap k v
+emptyMap = BinMap empty
+
+singletonMap :: k -> v -> BinMap k v
+singletonMap k v = BinMap (singleton (Entry k v))
+
+insertMap :: Ord k => k -> v -> BinMap k v -> BinMap k v
+insertMap k v (BinMap t) = BinMap (insert (Entry k v) t)
+
+deleteMap :: Ord k => k -> BinMap k v -> BinMap k v
+deleteMap k (BinMap t) = BinMap (delete (Entry k undefined) t)
+
+instance Ord k => Semigroup (BinMap k v) where
+    BinMap t <> BinMap t' = BinMap (t <> t')
+
+instance Ord k => Monoid (BinMap k v) where
+    mempty = emptyMap
+
+unit :: ()
+unit = ()
+
+pair :: (Int,String)
+pair = (5, "a")
+
+void :: Void
+void = error "no such value"
+
+q1 :: [BinTree ()]
+q1 = [singleton (), empty]
+
+q2 :: [BinTree Void]
+q2 = [empty]

@@ -1,6 +1,6 @@
 module Main where
 
-import BinTree (BinMap, emptyMap)
+import BinMap (BinMap, emptyMap)
 
 run :: (Read k, Ord k, Show k, Read v, Show v) => BinMap k v -> IO ()
 run oldMap = do
