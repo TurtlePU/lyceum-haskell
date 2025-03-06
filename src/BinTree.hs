@@ -34,6 +34,19 @@ instance Foldable BinTree where
     minimum = fst . deleteMin
     maximum = snd . deleteMax
 
+-- instance Functor BinTree where
+-- instead:
+-- Set.map; Set.mapMonotonic
+
+mapMonotonic :: (a -> b) -> BinTree a -> BinTree b
+mapMonotonic _ Leaf = Leaf
+mapMonotonic f Node {..} = Node
+    { left = mapMonotonic f left
+    , value = f value
+    , right = mapMonotonic f right
+    , ..
+    }
+
 instance Show a => Show (BinTree a) where
     show Leaf = ""
     show Node {..} = "(" ++ show left ++ show value ++ show right ++ ")"

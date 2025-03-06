@@ -1,10 +1,14 @@
+{-# LANGUAGE DeriveFunctor #-}
+
 module BinMap where
 
-import BinTree (BinTree, empty, singleton, insert, delete)
+import BinTree
+    ( BinTree, empty, singleton, insert, delete, mapMonotonic )
 import Data.Void (Void)
 import Data.Bifunctor (first)
 
 data Entry k v = Entry { eKey :: k, eValue :: v } -- (k, v)
+    deriving (Functor)
 
 instance (Read k, Read v) => Read (Entry k v) where
     readsPrec n s =
@@ -45,6 +49,9 @@ instance Ord k => Semigroup (BinMap k v) where
 
 instance Ord k => Monoid (BinMap k v) where
     mempty = emptyMap
+
+instance Functor (BinMap k) where
+    fmap f (BinMap t) = BinMap (mapMonotonic (fmap f) t)
 
 unit :: ()
 unit = ()
