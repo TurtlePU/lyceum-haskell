@@ -30,6 +30,11 @@ class Functor f where
 instance Functor [] where
     fmap = map
 
+instance Functor IO where
+    fmap f comp = do
+        x <- comp
+        return (f x)
+
 -- functor laws!
 -- fmap id = id
 -- fmap (f . g) = fmap f . fmap g
