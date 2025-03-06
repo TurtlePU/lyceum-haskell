@@ -11,7 +11,16 @@ data BinTree a
         , right :: BinTree a
         , size :: Int
         }
-        deriving Read
+
+instance Read a => Read (BinTree a) where
+    readsPrec n ('(':s) =
+        [ (node l v r, w)
+        | (l, t) <- readsPrec n s
+        , (v, u) <- readsPrec n t
+        , (r, ')':w) <- readsPrec n u
+        ]
+        ++ [(Leaf, s)]
+    readsPrec _ s = [(Leaf, s)]
 
 instance Foldable BinTree where
     foldr :: (a -> b -> b) -> b -> BinTree a -> b
