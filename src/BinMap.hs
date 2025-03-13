@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFoldable #-}
 
 module BinMap where
 
@@ -8,7 +9,7 @@ import Data.Void (Void)
 import Data.Bifunctor (first)
 
 data Entry k v = Entry { eKey :: k, eValue :: v } -- (k, v)
-    deriving (Functor)
+    deriving (Functor, Foldable)
 
 instance (Read k, Read v) => Read (Entry k v) where
     readsPrec n s =
@@ -27,7 +28,7 @@ instance Ord k => Ord (Entry k v) where
     compare (Entry k _) (Entry k' _) = compare k k'
 
 newtype BinMap k v = BinMap { binMap :: BinTree (Entry k v) }
-    deriving (Show)
+    deriving (Show, Foldable)
 
 instance (Read k, Read v) => Read (BinMap k v) where
     readsPrec n s = map (first BinMap) (readsPrec n s)

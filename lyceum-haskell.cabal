@@ -60,7 +60,8 @@ library
     -- Modules exported by the library.
     exposed-modules:
       BinMap,
-      BinTree
+      BinTree,
+      Maybe
 
     -- Modules included in this library but not exported.
     -- other-modules:
