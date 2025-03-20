@@ -77,3 +77,81 @@ instance MyMonad IO where
         x <- actX
         let actY = cont x
         actY
+
+
+newtype State s a = State { runState :: s -> (a, s) }
+
+-- f s =
+--  let (x, s') = g s
+--  let (y, s'') = h x s'
+--  ...
+
+instance Functor (State s) where
+    fmap :: (a -> b) -> State s a -> State s b
+    fmap f (State st) = State (\s -> let (a, s') = st s in (f a, s'))
+
+instance Applicative (State s) where
+    pure :: a -> State s a
+    pure a = State (\s -> (a, s))
+
+    (<*>) :: State s (a -> b) -> State s a -> State s b
+    State sf <*> State sx = State (\s0 ->
+        let (f, s1) = sf s0
+            (x, s2) = sx s1
+         in (f x, s2)
+        )
+
+instance Monad (State s) where
+    (>>=) :: State s a -> (a -> State s b) -> State s b
+    State sx >>= k = State (\s0 ->
+        let (x, s1)  = sx s0
+            State sy = k x
+         in sy s1
+        )
+
+get :: State s s
+get = State (\s -> (s, s))
+
+put :: s -> State s ()
+put s' = State (\_ -> ((), s'))
+
+preincr :: State Int Int -- ++x
+preincr = do
+    x <- get
+    let x' = x + 1
+    put x'
+    return x'
+
+postincr :: State Int Int -- x++
+postincr = do
+    x <- get
+    let x' = x + 1
+    put x'
+    return x
+
+newtype Reader e a = Reader { runReader :: e -> a }
+-- instance Monad ((->) e)
+
+instance Functor (Reader e) where
+    fmap :: (a -> b) -> Reader e a -> Reader e b
+    -- (a -> b) -> (e -> a) -> (e -> b) -- (.)
+    fmap f (Reader g) = Reader (\e -> f (g e))
+
+instance Applicative (Reader e) where
+    pure :: a -> Reader e a
+    -- a -> e -> a -- K
+    -- Kxy = x
+    pure x = Reader (\_ -> x)
+
+    (<*>) :: Reader e (a -> b) -> Reader e a -> Reader e b
+    -- (e -> (a -> b)) -> (e -> a) -> (e -> b) -- S
+    -- Sfgx = fx(gx)
+    Reader rf <*> Reader rx = Reader (\e -> rf e (rx e))
+
+instance Monad (Reader e) where
+    (>>=) :: Reader e a -> (a -> Reader e b) -> Reader e b
+    -- (e -> a) -> (a -> e -> b) -> (e -> b)
+    Reader rx >>= k = Reader (\e -> runReader (k (rx e)) e)
+
+ask :: Reader e e
+ask = Reader (\x -> x) -- id -- I
