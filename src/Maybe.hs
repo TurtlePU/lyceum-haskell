@@ -155,3 +155,33 @@ instance Monad (Reader e) where
 
 ask :: Reader e e
 ask = Reader (\x -> x) -- id -- I
+
+data Writer w a = Writer { wLog :: w, wRes :: a }
+    deriving (Functor)
+-- fmap :: (a -> b) -> Writer w a -> Writer w b
+
+instance Monoid w => Applicative (Writer w) where
+    pure :: a -> Writer w a
+    pure = Writer mempty
+
+    (<*>) :: Writer w (a -> b) -> Writer w a -> Writer w b
+    Writer l f <*> Writer l' x = Writer (l <> l') (f x)
+
+instance Monoid w => Monad (Writer w) where
+    (>>=) :: Writer w a -> (a -> Writer w b) -> Writer w b
+    Writer l x >>= k =
+        let Writer l' y = k x
+         in Writer (l <> l') y
+
+newtype Identity a = Identity { runIdendity :: a }
+    deriving Functor
+
+instance Applicative Identity where
+    pure :: a -> Identity a
+    pure = Identity
+
+    (<*>) :: Identity (a -> b) -> Identity a -> Identity b
+    Identity f <*> Identity x = Identity (f x)
+
+instance Monad Identity where
+    (>>=) = error "TODO"

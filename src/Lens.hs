@@ -1,10 +1,11 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Lens where
 
-import Maybe (State (..))
+import Maybe (State (..), Writer (Writer, wLog), Identity (Identity))
 import Data.Kind (Type)
 
 data Layout -- some def...
@@ -88,3 +89,34 @@ instance Category Lens where
         , lensSet = \_ x -> x
         }
     (<<<) = (...)
+
+collect ::
+    Functor f =>
+    (Layout -> f Layout) ->
+    AppState -> f AppState
+collect f s =
+    let l = lensGet appLayoutLens s
+        l' = f l
+     in fmap (lensSet appLayoutLens s) l'
+
+lensGet' :: AppState -> Layout
+lensGet' s = wLog $ collect (\l -> Writer l l) s
+
+lensSet' :: AppState -> Layout -> AppState
+lensSet' s l =
+    let Identity s' = collect (\_ -> Identity l) s
+     in s'
+
+type VanLaarhoven s t =
+    forall f. Functor f => (t -> f t) -> (s -> f s)
+
+appLaarhoven :: VanLaarhoven AppState Layout
+appLaarhoven f s =
+    fmap (\l -> MkAppState l (appLog s))
+         (f (appLayout s))
+
+-- profunctor optics
+
+compose ::
+    VanLaarhoven t u -> VanLaarhoven s t -> VanLaarhoven s u
+compose f g = g . f
